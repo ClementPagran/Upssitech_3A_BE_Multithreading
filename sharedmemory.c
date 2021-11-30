@@ -60,7 +60,7 @@ bool destroy_memory_block(char *nomfichier)
 int main()
 {
     int* mem; //la memoire partagee va pointer sur un entier
-    mem = (int*)attach_memory_block("sharedmem",sizeof(float)); //le fichier sharedmem doit exister...
+    mem = (int*)attach_memory_block("sharedmem",sizeof(int)); //le fichier sharedmem doit exister...
     *mem = 2;
     printf("%d\n",*mem);
     detach_memory_block(mem);
