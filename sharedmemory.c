@@ -21,7 +21,6 @@ static int get_shared_block(char *nomfichier, int taille)
 }
 
 
-//Creation memoire partagée
 void * attach_memory_block(char *nomfichier,int taille)
 {
     int shared_block_id = get_shared_block(nomfichier,taille);
@@ -57,12 +56,13 @@ bool destroy_memory_block(char *nomfichier)
 
 }
 
+// Test des fonctions
 int main()
 {
     int* mem; //la memoire partagee va pointer sur un entier
-    mem = (int*)attach_memory_block("sharedmem",sizeof(int)); //le fichier sharedmem doit exister...
-    *mem = 2;
+    mem = (int*)attach_memory_block("sharedmem",sizeof(int)); // (le fichier sharedmem doit exister...) Crée et attache la memoire partagé
+    *mem = 2; // Rempli la mémoire
     printf("%d\n",*mem);
-    detach_memory_block(mem);
-    destroy_memory_block("sharedmem");
+    detach_memory_block(mem); // Detache la mémoire si plus besoin
+    destroy_memory_block("sharedmem"); // Supprime la mémoire si personne en a plus besoin
 }
