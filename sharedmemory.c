@@ -11,15 +11,17 @@
 
 static int get_shared_block(char *nomfichier, int taille)
 {
-    key_t key;
-    key = ftok(nomfichier,0);
+    key_t key; 
+    key = ftok(nomfichier,0); //Convertir un nom de fichier et un identificateur de projet en clé IPC System V
     if (key == IPC_RESULT_ERROR)
     {
         return IPC_RESULT_ERROR;
     }
-    return shmget(key,taille,0644|IPC_CREAT);
+    return shmget(key,taille,0644|IPC_CREAT); //renvoie l'identifiant du segment de mémoire partagée
 }
 
+
+//Creation memoire partagée
 void * attach_memory_block(char *nomfichier,int taille)
 {
     int shared_block_id = get_shared_block(nomfichier,taille);
@@ -30,7 +32,7 @@ void * attach_memory_block(char *nomfichier,int taille)
         return NULL;
     }
 
-    result = shmat(shared_block_id,NULL,0);
+    result = shmat(shared_block_id,NULL,0); //attache le segment de mémoire partagée System V identifié par shmid au segment de données du processus appelant
     if (result == (char *)IPC_RESULT_ERROR)
     {
         return NULL;
@@ -51,7 +53,8 @@ bool destroy_memory_block(char *nomfichier)
     {
         return NULL;
     }
-    return (shmctl(shared_block_id,IPC_RMID,NULL)!= IPC_RESULT_ERROR);
+    return (shmctl(shared_block_id,IPC_RMID,NULL)!= IPC_RESULT_ERROR); // effectue  l'opération  de  contrôle  indiquée  par cmd sur le segment de mémoire partagée System V identifié par shmid.
+
 }
 
 int main()
