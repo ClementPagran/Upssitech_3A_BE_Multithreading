@@ -57,6 +57,7 @@ bool destroy_memory_block(char *nomfichier)
 }
 
 // Test des fonctions
+/*
 int main()
 {
     int* mem; //la memoire partagee va pointer sur un entier
@@ -66,3 +67,5 @@ int main()
     detach_memory_block(mem); // Detache la mémoire si plus besoin
     destroy_memory_block("sharedmem"); // Supprime la mémoire si personne en a plus besoin
 }
+*/
+
