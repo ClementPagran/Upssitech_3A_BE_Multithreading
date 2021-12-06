@@ -10,4 +10,4 @@ capteur: capteur.c sharedmemory.o
 	$(COMP) $(FLAGS) -o $@ $^
 
 clean:
-	rm -f *.o *.gch
+	rm -f *.o *.gch capteur
