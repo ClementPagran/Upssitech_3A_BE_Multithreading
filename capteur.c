@@ -4,13 +4,13 @@
 #include<signal.h>
 #include "sharedmemory.h"
 
-int capteur()
+int main()
 {
 	float* data;
 	pid_t* pid_serv;
 	pid_t* pid_capt;
 	sigset_t   set;
-	int sig;
+	int sig; //utile pour savoir quel signal a été reçu dans le set
 
 	//Ajout du signal SIGUSR1 parmi ceux qui reveilleront le processus.
 	sigemptyset(&set);                                                             
@@ -26,7 +26,7 @@ int capteur()
 		printf("erreur : capteur n'a pas acces au bloc \"Memoire/PID_capteur.mem\"\n");
 		return -1;
 	}
-	*pid_capt = (int)getpid();
+	*pid_capt = getpid();
 	
 	//Recuperation du PID du service avec lequel le capteur communique
 	if((pid_serv = (pid_t*)attach_memory_block("./Memoire/PID_S1.mem",sizeof(pid_t)))==NULL)
@@ -48,7 +48,8 @@ int capteur()
 			printf("sigwait error\n");                                                  
 			return -1;  
 		}
-		*data = random()%30; //genere la donnee (temperature aleatoire entre 0 et 29 degres)
+
+		*data = 0.1*(random()%300); //genere la donnee (temperature aleatoire entre 0 et 29,9 degres)
 		if(kill(*pid_serv,SIGUSR1) !=0)
 		{
 			printf("kill (signal vers service) error\n");
