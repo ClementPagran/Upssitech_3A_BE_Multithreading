@@ -1,13 +1,16 @@
-COMP=gcc
-FLAGS=-Wall
+CC=gcc
+FLAGS=-Wall -pthread
 
-all: capteur
-
-%.o: %.c %.h
-	$(COMP) $(FLAGS) -c $<
+all: capteur calcul
 
 capteur: capteur.c sharedmemory.o
-	$(COMP) $(FLAGS) -o $@ $^
+	$(CC) $(FLAGS) $^ -o $@
 
-clean:
-	rm -f *.o *.gch capteur
+calcul: calcul.c sharedmemory.o
+	$(CC) $(FLAGS) $^ -o $@
+
+%.o:%.c %.h
+	$(CC) $(FLAGS) -c $<
+
+make clean:
+	rm -f *.o capteur calcul
