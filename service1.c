@@ -20,6 +20,7 @@
 #define path_to_shared_memory_data_sensor "./Memoire/data_capteur.mem"
 #define path_to_my_shared_memory_increment "./Memoire/INCREMENT_S1.mem"
 #define chemin_memoire_stable "memoire_stable.txt"
+#define TAILLE_FENETRE 10
 
 const char *path;
 float* value_adr;
@@ -43,13 +44,7 @@ int* watchdog_increment;
 
 
 int main(int argc, char** argv){
-    FILE* memoire_stable = fopen(chemin_memoire_stable,"w");
-    if (memoire_stable == NULL)
-    {
-      perror("fopen:");
-      exit(EXIT_FAILURE);
-    }
-
+    
     pthread_t thread_increment;
 
     sem_unlink(SEM_CONSUMER);
@@ -97,35 +92,43 @@ int main(int argc, char** argv){
     printf("Hello, starting server 1\n");
     fflush(stdout);
     int cmp = 0;
-    double tab[10] = {0};
+    double tab[TAILLE_FENETRE] = {0};
     double moyenne_glissante = 0.0;
-    char s[100];
-
+    int x = 0;
     while(1)
     {
-        
+        FILE* memoire_stable = fopen(chemin_memoire_stable,"w");
+        if (memoire_stable == NULL)
+        {
+          perror("fopen:");
+          exit(EXIT_FAILURE);
+        }
         sem_wait(sem_cons);
-        cmp = cmp%10;
+        cmp = cmp%TAILLE_FENETRE;
         tab[cmp] = *sensor_data;
         //fprintf(memoire_stable,"%f\n",tab[cmp]);
         //sprintf(s,"%f",tab[cmp]);
-        fputs("1\n",memoire_stable);
+        //fputs("1\n",memoire_stable);
         //fputs(s,memoire_stable);
         //fputs("\n",memoire_stable);
+        for(int i=0; i<10; i++){
+          fprintf(memoire_stable, "%f\n", tab[i]);
+        }
         printf("valeur t : %f\n",tab[cmp]);
         fflush(stdout);
-        moyenne_glissante = mean(tab, 10);
+        moyenne_glissante = mean(tab, TAILLE_FENETRE);
         printf("moyenne : %f\n",moyenne_glissante);
         fflush(stdout);
         cmp++;
         sleep(1);
-        sem_post(sem_prod);      
+        sem_post(sem_prod);  
+        fclose(memoire_stable);    
     }
     sem_close(sem_cons);
     sem_close(sem_prod);
     sem_unlink(SEM_CONSUMER);
     sem_unlink(SEM_PRODUCER);
-    fclose(memoire_stable);
+    
 }
 
 void* thread_increment_function(void* p) {
