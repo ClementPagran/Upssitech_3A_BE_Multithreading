@@ -14,21 +14,21 @@
 
 int main()
 {
-	float* data;
-	if((data = (float*)attach_memory_block("./Memoire/data_capteur.mem",sizeof(float)))==NULL)
+	double* data;
+	if((data = (double*)attach_memory_block("./Memoire/data_capteur.mem",sizeof(double)))==NULL)
 	{
 		printf("erreur : capteur n'a pas acces au bloc \"Memoire/data_capteur.mem\"\n");
 		return -1;
 	}
 
-	sem_t *sem_prod = sem_open(SEM_PRODUCER,1); //dernier 1 : valeur initialisation
+	sem_t *sem_prod = sem_open(SEM_PRODUCER,0);
 	if (sem_prod == SEM_FAILED)
 	{
 		perror("sem_open/producer");
 		exit(EXIT_FAILURE);
 	}
 
-	sem_t *sem_cons = sem_open(SEM_CONSUMER,0); //dernier 0 : valeur initialisation
+	sem_t *sem_cons = sem_open(SEM_CONSUMER,0);
 	if (sem_cons == SEM_FAILED)
 	{
 		perror("sem_open/consumer");
@@ -39,6 +39,8 @@ int main()
 	{
 		sem_wait(sem_prod);
 		*data = 0.1*(random()%300); //genere la donnee (temperature aleatoire entre 0 et 29,9 degres)
+		printf("valeur capteur : %f",*data);
+		fflush(stdout);
 		sem_post(sem_cons);
 	}
 	sem_close(sem_prod);

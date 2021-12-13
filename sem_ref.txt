@@ -1,4 +1,4 @@
 Capteur and service 
 
-/sem_consumer
-/sem_producer
+/sem_consumer (init to 0)
+/sem_producer (init to 1)

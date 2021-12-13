@@ -1,16 +1,18 @@
 CC=gcc
 FLAGS=-Wall -pthread
+progs=capteur service1
+dep=sharedmemory.o
 
-all: capteur calcul
+all:$(progs)
 
-capteur: capteur.c sharedmemory.o
+capteur: capteur.c $(dep)
 	$(CC) $(FLAGS) $^ -o $@
 
-calcul: calcul.c sharedmemory.o
+service1: service1.c $(dep)
 	$(CC) $(FLAGS) $^ -o $@
 
 %.o:%.c %.h
 	$(CC) $(FLAGS) -c $<
 
 make clean:
-	rm -f *.o capteur calcul
+	rm -f *.o $(progs)
