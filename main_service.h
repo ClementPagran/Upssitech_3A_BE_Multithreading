@@ -7,6 +7,15 @@
 #include "sharedmemory.h"
 #include <limits.h>
 #include <stdbool.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+#define SEM_CONSUMER "/sem_consumer"
+#define SEM_PRODUCER "/sem_producer"
+#include<time.h>
+#include<semaphore.h>
+
+#include<stdio.h>
+#include<stdlib.h>
 
 const char *path;
 float* value_adr;
