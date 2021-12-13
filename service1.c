@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
+
 #include "sharedmemory.h"
 
 #define SEM_CONSUMER "/sem_consumer"
@@ -26,6 +28,8 @@
 void* increment_watchdog_function(void*);
 
 double mean(double*,int);
+
+void read_from_stable_memory(double*,int*,FILE*);
 
 int main(int argc, char** argv){
     
@@ -63,11 +67,26 @@ int main(int argc, char** argv){
 
     //lancement service
     printf("Hello, starting server 1\n");
-    fflush(stdout);
-    int i_fenetre = 0;
-    double temperature[TAILLE_FENETRE]={0};
+    //fflush(stdout);
     double moyenne_glissante = 0.0;
     FILE* memoire_stable;
+    double temperature[TAILLE_FENETRE];
+    int i_fenetre;
+    if (argc == 2 && strcmp(argv[1],"resume")==0)
+    {
+      if ((memoire_stable = fopen(chemin_memoire_stable,"r"))== NULL)
+        {
+          perror("fopen:");
+          exit(EXIT_FAILURE);
+        }
+      read_from_stable_memory(temperature,&i_fenetre,memoire_stable);
+      fclose(memoire_stable);
+      printf("reprise reussie !\n");
+    }
+    else
+    {
+      i_fenetre = 0;
+    }
     while(1)
     { 
         sem_wait(sem_cons);
@@ -80,8 +99,7 @@ int main(int argc, char** argv){
         for(int i=0; i<TAILLE_FENETRE; i++){
           fprintf(memoire_stable, "%f\n", temperature[i]);
         }
-        //derniere valeur :
-        fprintf(memoire_stable,"---\n%d\n",i_fenetre);
+        fprintf(memoire_stable,"---\n%d\n",i_fenetre); //indice en fin de fichier utile a la reprise
         fclose(memoire_stable);
         printf("valeur t : %f\n",temperature[i_fenetre]);
         moyenne_glissante = mean(temperature, TAILLE_FENETRE);
@@ -91,10 +109,25 @@ int main(int argc, char** argv){
         sleep(1);
         sem_post(sem_prod);
     }
+    
     sem_close(sem_cons);
     sem_close(sem_prod);
     sem_unlink(SEM_CONSUMER);
     sem_unlink(SEM_PRODUCER);
+}
+
+void read_from_stable_memory(double* tableau, int* i_fenetre,FILE* memoire_stable)
+{
+  char chaine[100];
+  for(int i = 0;i<TAILLE_FENETRE;i++)
+  {
+    fscanf(memoire_stable,"%s",chaine);
+    //printf("%s\n",chaine);
+    tableau[i] = strtod(chaine,NULL);
+  }
+  fscanf(memoire_stable,"%s",chaine);
+  fscanf(memoire_stable,"%s",chaine);
+  *i_fenetre = atoi(chaine)+1;  
 }
 
 // fonction appelée dans le Thread_increment pour indiquer au watchdog qu'on est en vie
