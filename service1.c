@@ -20,37 +20,20 @@
 #define path_to_shared_memory_data_sensor "./Memoire/data_capteur.mem"
 #define path_to_my_shared_memory_increment "./Memoire/INCREMENT_S1.mem"
 #define chemin_memoire_stable "memoire_stable.txt"
-#define TAILLE_FENETRE 10
+#define TAILLE_FENETRE 100
+#define SLEEP_WATCHDOG 1
 
-const char *path;
-float* value_adr;
-float value;
+void* increment_watchdog_function(void*);
 
-void* thread_increment_function(void* p);
-
-//char *path_to_my_shared_memory = "./Memoire/PID_S1.mem";
-
-double mean (double* tab, int size){
-    double temp = 0;
-    for(int i=0; i<size; i++){
-      temp += tab[i];
-    }
-    return(temp/size);
-}
-
-// fonction appelée dans le Thread_increment pour indiquer au watchdog qu'on est en vie
-
-int* watchdog_increment;
-
+double mean(double*,int);
 
 int main(int argc, char** argv){
     
-    pthread_t thread_increment;
-
+    //initialisation des semaphores
     sem_unlink(SEM_CONSUMER);
     sem_unlink(SEM_PRODUCER);
 
-    // Création des semaphores 
+    // Création des semaphores pour synchroniser le capteur (schema producteur/consommateur) 
     sem_t *sem_prod = sem_open(SEM_PRODUCER,O_CREAT,0660,1); //dernier 1 : valeur initialisation
     if (sem_prod == SEM_FAILED)
     {
@@ -65,38 +48,28 @@ int main(int argc, char** argv){
       exit(EXIT_FAILURE);
     }
 
-  
-
-    // Accès à la mémoire partagée du capteur (1 *float)
+    // Accès à la mémoire partagée du capteur
     double* sensor_data;
     if((sensor_data=(double*)attach_memory_block(path_to_shared_memory_data_sensor, sizeof(double)))==NULL)
 	  {
 		  printf("erreur : capteur n'a pas acces au bloc \"Memoire/data_capteur.mem\"\n");
 		  return -1;
 	  }
-
-    // Creation memoire partagee PID pour chien de garde et le capteur
-    //int* pid_watchdog = (int*)attach_memory_block(path_to_my_shared_memory_increment, sizeof(int));
-
-    //*pid_adr = (int)getpid();
-
     
-    
-    // Creation memoire Increment
-    if((watchdog_increment = (int*)attach_memory_block(path_to_my_shared_memory_increment, sizeof(int)))==NULL)
-    {
-      printf("erreur : service 1 n'a pas acces au bloc \"Memoire/INCREMENT_S1.mem\"\n");
-      return -1;
-    }
-    pthread_create(&thread_increment, NULL, thread_increment_function, NULL);
+    // Creation memoire variable watchdog et thread
+    int watchdog_increment;
+    pthread_t thread_increment;
+    pthread_create(&thread_increment, NULL, increment_watchdog_function, (void*) &watchdog_increment);
+
+    //lancement service
     printf("Hello, starting server 1\n");
     fflush(stdout);
-    int cmp = 0;
-    double tab[TAILLE_FENETRE] = {0};
+    int i_fenetre = 0;
+    double temperature[TAILLE_FENETRE]={0};
     double moyenne_glissante = 0.0;
-    int x = 0;
     while(1)
     {
+        i_fenetre = i_fenetre%TAILLE_FENETRE;
         FILE* memoire_stable = fopen(chemin_memoire_stable,"w");
         if (memoire_stable == NULL)
         {
@@ -104,23 +77,24 @@ int main(int argc, char** argv){
           exit(EXIT_FAILURE);
         }
         sem_wait(sem_cons);
-        cmp = cmp%TAILLE_FENETRE;
-        tab[cmp] = *sensor_data;
-        //fprintf(memoire_stable,"%f\n",tab[cmp]);
-        //sprintf(s,"%f",tab[cmp]);
+        temperature[i_fenetre] = *sensor_data;
+        //fprintf(memoire_stable,"%f\n",temperature[i_fenetre]);
+        //sprintf(s,"%f",temperature[i_fenetre]);
         //fputs("1\n",memoire_stable);
         //fputs(s,memoire_stable);
         //fputs("\n",memoire_stable);
-        for(int i=0; i<10; i++){
-          fprintf(memoire_stable, "%f\n", tab[i]);
+        for(int i=0; i<TAILLE_FENETRE; i++){
+          fprintf(memoire_stable, "%f\n", temperature[i]);
         }
-        printf("valeur t : %f\n",tab[cmp]);
+        printf("valeur t : %f\n",temperature[i_fenetre]);
         fflush(stdout);
-        moyenne_glissante = mean(tab, TAILLE_FENETRE);
+        moyenne_glissante = mean(temperature, TAILLE_FENETRE);
         printf("moyenne : %f\n",moyenne_glissante);
         fflush(stdout);
-        cmp++;
+        i_fenetre++;
         sleep(1);
+
+
         sem_post(sem_prod);  
         fclose(memoire_stable);    
     }
@@ -128,13 +102,30 @@ int main(int argc, char** argv){
     sem_close(sem_prod);
     sem_unlink(SEM_CONSUMER);
     sem_unlink(SEM_PRODUCER);
-    
 }
 
-void* thread_increment_function(void* p) {
-  for(int i=0; i < INT_MAX; i++){
-    (*watchdog_increment) = i;
+// fonction appelée dans le Thread_increment pour indiquer au watchdog qu'on est en vie
+void* increment_watchdog_function(void* p) {
+  int* watchdog_increment = (int*) p;
+  if((watchdog_increment = (int*)attach_memory_block(path_to_my_shared_memory_increment, sizeof(int)))==NULL)
+    {
+      printf("erreur : service 1 n'a pas acces au bloc \"Memoire/INCREMENT_S1.mem\"\n");
+      return NULL;
+    }
+  (*watchdog_increment) = 0;
+  while(1)
+  {
+    (*watchdog_increment)++;
     printf("watchdog : %d\n",*watchdog_increment);
-    sleep(1);
+    sleep(SLEEP_WATCHDOG);
   }
+}
+
+//fonction calcul de moyenne du tableau
+double mean (double* temperature, int size){
+    double somme = 0;
+    for(int i=0; i<size; i++){
+      somme += temperature[i];
+    }
+    return(somme/size);
 }

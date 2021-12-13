@@ -1,14 +1,11 @@
 CC=gcc
 FLAGS=-Wall -pthread
-progs=capteur service1
+progs=capteur.exe service1.exe
 dep=sharedmemory.o
 
 all:$(progs)
 
-capteur: capteur.c $(dep)
-	$(CC) $(FLAGS) $^ -o $@
-
-service1: service1.c $(dep)
+%.exe: %.c $(dep)
 	$(CC) $(FLAGS) $^ -o $@
 
 %.o:%.c %.h
