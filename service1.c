@@ -4,27 +4,30 @@
 #include <sys/shm.h>
 #include <signal.h>
 #include <unistd.h>
-#include "sharedmemory.h"
 #include <limits.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#define SEM_CONSUMER "/sem_consumer"
-#define SEM_PRODUCER "/sem_producer"
 #include <time.h>
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include "sharedmemory.h"
+
+#define SEM_CONSUMER "/sem_consumer"
+#define SEM_PRODUCER "/sem_producer"
+#define path_to_shared_memory_data_sensor "./Memoire/data_capteur.mem"
+#define path_to_my_shared_memory_increment "./Memoire/INCREMENT_S1.mem"
+#define chemin_memoire_stable "memoire_stable.txt"
 
 const char *path;
 float* value_adr;
 float value;
-pthread_t thread_increment;
-int* increment_test;
+
+void* thread_increment_function(void* p);
 
 //char *path_to_my_shared_memory = "./Memoire/PID_S1.mem";
-//char *path_to_my_shared_memory_increment = "./Memoire/INCREMENT_S1.mem";
-char *path_to_shared_memory_data_sensor = "./Memoire/data_capteur.mem";
 
 double mean (double* tab, int size){
     double temp = 0;
@@ -36,15 +39,18 @@ double mean (double* tab, int size){
 
 // fonction appelée dans le Thread_increment pour indiquer au watchdog qu'on est en vie
 
-/*void *thread_increment_function() {
-  for(int i=0; i < INT_MAX; i++){
-    (*increment_test) = i;
-    sleep(0.1);
-  }
-}
-*/
+int* watchdog_increment;
+
 
 int main(int argc, char** argv){
+    FILE* memoire_stable = fopen(chemin_memoire_stable,"w");
+    if (memoire_stable == NULL)
+    {
+      perror("fopen:");
+      exit(EXIT_FAILURE);
+    }
+
+    pthread_t thread_increment;
 
     sem_unlink(SEM_CONSUMER);
     sem_unlink(SEM_PRODUCER);
@@ -64,39 +70,48 @@ int main(int argc, char** argv){
       exit(EXIT_FAILURE);
     }
 
-    printf("Hello, starting server 1\n");
-    fflush(stdout);
-    int cmp = 0;
-    double tab[10] = {0};
-    double moyenne_glissante = 0.0;
-    moyenne_glissante = 1;
+  
 
     // Accès à la mémoire partagée du capteur (1 *float)
     double* sensor_data;
-    if((sensor_data=(double*)attach_memory_block("./Memoire/data_capteur.mem", sizeof(double)))==NULL)
+    if((sensor_data=(double*)attach_memory_block(path_to_shared_memory_data_sensor, sizeof(double)))==NULL)
 	  {
 		  printf("erreur : capteur n'a pas acces au bloc \"Memoire/data_capteur.mem\"\n");
 		  return -1;
 	  }
 
     // Creation memoire partagee PID pour chien de garde et le capteur
-    //int* pid_adr = (int*)attach_memory_block(path_to_my_shared_memory, sizeof(int));
+    //int* pid_watchdog = (int*)attach_memory_block(path_to_my_shared_memory_increment, sizeof(int));
+
     //*pid_adr = (int)getpid();
 
     
     
     // Creation memoire Increment
-    //increment_test = (int*)attach_memory_block(path_to_my_shared_memory_increment, sizeof(int));
-    //pthread_create(&thread_increment, NULL, thread_increment_function, NULL);
+    if((watchdog_increment = (int*)attach_memory_block(path_to_my_shared_memory_increment, sizeof(int)))==NULL)
+    {
+      printf("erreur : service 1 n'a pas acces au bloc \"Memoire/INCREMENT_S1.mem\"\n");
+      return -1;
+    }
+    pthread_create(&thread_increment, NULL, thread_increment_function, NULL);
+    printf("Hello, starting server 1\n");
+    fflush(stdout);
+    int cmp = 0;
+    double tab[10] = {0};
+    double moyenne_glissante = 0.0;
+    char s[100];
 
-
-    // Ajout des semaphores hakim ou signal pour indiquer au capteur de publier 
     while(1)
     {
         
         sem_wait(sem_cons);
         cmp = cmp%10;
         tab[cmp] = *sensor_data;
+        //fprintf(memoire_stable,"%f\n",tab[cmp]);
+        //sprintf(s,"%f",tab[cmp]);
+        fputs("1\n",memoire_stable);
+        //fputs(s,memoire_stable);
+        //fputs("\n",memoire_stable);
         printf("valeur t : %f\n",tab[cmp]);
         fflush(stdout);
         moyenne_glissante = mean(tab, 10);
@@ -110,4 +125,13 @@ int main(int argc, char** argv){
     sem_close(sem_prod);
     sem_unlink(SEM_CONSUMER);
     sem_unlink(SEM_PRODUCER);
+    fclose(memoire_stable);
+}
+
+void* thread_increment_function(void* p) {
+  for(int i=0; i < INT_MAX; i++){
+    (*watchdog_increment) = i;
+    printf("watchdog : %d\n",*watchdog_increment);
+    sleep(1);
+  }
 }

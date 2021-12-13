@@ -39,7 +39,7 @@ int main()
 	{
 		sem_wait(sem_prod);
 		*data = 0.1*(random()%300); //genere la donnee (temperature aleatoire entre 0 et 29,9 degres)
-		printf("valeur capteur : %f",*data);
+		printf("valeur capteur : %f\n",*data);
 		fflush(stdout);
 		sem_post(sem_cons);
 	}
