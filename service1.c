@@ -20,7 +20,7 @@
 #define path_to_shared_memory_data_sensor "./Memoire/data_capteur.mem"
 #define path_to_my_shared_memory_increment "./Memoire/INCREMENT_S1.mem"
 #define chemin_memoire_stable "memoire_stable.txt"
-#define TAILLE_FENETRE 100
+#define TAILLE_FENETRE 10
 #define SLEEP_WATCHDOG 1
 
 void* increment_watchdog_function(void*);
@@ -67,36 +67,29 @@ int main(int argc, char** argv){
     int i_fenetre = 0;
     double temperature[TAILLE_FENETRE]={0};
     double moyenne_glissante = 0.0;
+    FILE* memoire_stable;
     while(1)
-    {
-        i_fenetre = i_fenetre%TAILLE_FENETRE;
-        FILE* memoire_stable = fopen(chemin_memoire_stable,"w");
-        if (memoire_stable == NULL)
+    { 
+        sem_wait(sem_cons);
+        temperature[i_fenetre] = *sensor_data;
+        if ((memoire_stable = fopen(chemin_memoire_stable,"w"))== NULL)
         {
           perror("fopen:");
           exit(EXIT_FAILURE);
         }
-        sem_wait(sem_cons);
-        temperature[i_fenetre] = *sensor_data;
-        //fprintf(memoire_stable,"%f\n",temperature[i_fenetre]);
-        //sprintf(s,"%f",temperature[i_fenetre]);
-        //fputs("1\n",memoire_stable);
-        //fputs(s,memoire_stable);
-        //fputs("\n",memoire_stable);
         for(int i=0; i<TAILLE_FENETRE; i++){
           fprintf(memoire_stable, "%f\n", temperature[i]);
         }
+        //derniere valeur :
+        fprintf(memoire_stable,"---\n%d\n",i_fenetre);
+        fclose(memoire_stable);
         printf("valeur t : %f\n",temperature[i_fenetre]);
-        fflush(stdout);
         moyenne_glissante = mean(temperature, TAILLE_FENETRE);
         printf("moyenne : %f\n",moyenne_glissante);
-        fflush(stdout);
         i_fenetre++;
+        i_fenetre = i_fenetre%TAILLE_FENETRE;
         sleep(1);
-
-
-        sem_post(sem_prod);  
-        fclose(memoire_stable);    
+        sem_post(sem_prod);
     }
     sem_close(sem_cons);
     sem_close(sem_prod);
