@@ -1,0 +1,2 @@
+data_capteur.mem : double, données générées par capteur
+INCREMENT_S1.mem : type ? variable de contrôle activité de S1
