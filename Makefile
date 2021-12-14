@@ -1,15 +1,22 @@
 CC=gcc
 FLAGS=-Wall -pthread
-progs=capteur.exe service1.exe
-dep=sharedmemory.o
+SRC=src
+OBJ=obj
+BIN=bin
+SRCS=$(wildcard $(SRC)/*.c)
+OBJS=$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
+targets=capteur service1
+BINS=$(patsubst  %,$(BIN)/%.exe,$(targets))
+DEP=sharedmemory
+DEPS=$(patsubst  %,$(OBJ)/%.o,$(DEP))
 
-all:$(progs)
+all:$(BINS)
 
-%.exe: %.c $(dep)
+$(OBJ)/%.o:$(SRC)/%.c
+	$(CC) $(FLAGS) -c $^ -o $@
+
+$(BIN)/%.exe: $(OBJ)/%.o $(DEPS)
 	$(CC) $(FLAGS) $^ -o $@
 
-%.o:%.c %.h
-	$(CC) $(FLAGS) -c $<
-
 make clean:
-	rm -f *.o $(progs)
+	rm -f $(BIN)/* $(OBJ)/*
