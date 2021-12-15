@@ -16,14 +16,7 @@
 #include <string.h>
 
 #include "sharedmemory.h"
-
-#define SEM_CONSUMER "/sem_consumer"
-#define SEM_PRODUCER "/sem_producer"
-#define path_to_shared_memory_data_sensor "./Memoire/data_capteur.mem"
-#define path_to_my_shared_memory_increment "./Memoire/INCREMENT_S1.mem"
-#define chemin_memoire_stable "memoire_stable.txt"
-#define TAILLE_FENETRE 10
-#define SLEEP_WATCHDOG 1
+#include "defines.h"
 
 void* increment_watchdog_function(void*);
 

@@ -3,19 +3,18 @@
 #include<unistd.h>
 #include<signal.h>
 #include<time.h>
-#include"sharedmemory.h"
 #include<semaphore.h>
 #include <sys/stat.h>
-#include <fcntl.h> 
-#define SEM_CONSUMER "/sem_consumer"
-#define SEM_PRODUCER "/sem_producer"
-#define SEM_CONSUMER "/sem_consumer"
-#define SEM_PRODUCER "/sem_producer"
+#include <fcntl.h>
+
+#include"sharedmemory.h"
+#include "defines.h"
+
 
 int main()
 {
 	double* data;
-	if((data = (double*)attach_memory_block("./Memoire/data_capteur.mem",sizeof(double)))==NULL)
+	if((data = (double*)attach_memory_block(path_to_shared_memory_data_sensor,sizeof(double)))==NULL)
 	{
 		printf("erreur : capteur n'a pas acces au bloc \"Memoire/data_capteur.mem\"\n");
 		return -1;
