@@ -56,7 +56,7 @@ int main(int argc, char** argv){
     double* sensor_data;
     if((sensor_data=(double*)attach_memory_block(path_to_shared_memory_data_sensor, sizeof(double)))==NULL)
 	  {
-		  printf("erreur : capteur n'a pas acces au bloc \"Memoire/data_capteur.mem\"\n");
+		  printf("erreur : service n'a pas acces au bloc %s\n",path_to_shared_memory_data_sensor);
 		  return -1;
 	  }
     
@@ -135,7 +135,7 @@ void* increment_watchdog_function(void* p) {
   int* watchdog_increment = (int*) p;
   if((watchdog_increment = (int*)attach_memory_block(path_to_my_shared_memory_increment, sizeof(int)))==NULL)
     {
-      printf("erreur : service 1 n'a pas acces au bloc \"Memoire/INCREMENT_S1.mem\"\n");
+      printf("erreur : service 1 n'a pas acces au bloc %s\n",path_to_my_shared_memory_increment);
       return NULL;
     }
   (*watchdog_increment) = 0;
