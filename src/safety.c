@@ -7,7 +7,7 @@ void my_thread_func()
     int cpt=0;
     while(ticks*time_intervals_check <= timeout_ms)
     {
-        printf("Boucle:%d | %d\n",cpt,ticks*time_intervals_check);
+        printf("Watchdog wait:%d | %d\n",cpt,ticks*time_intervals_check);
         if(increment_prec!=*increment_jerem)
         {
             ticks = 0;

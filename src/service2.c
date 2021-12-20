@@ -37,6 +37,7 @@ int main(int argc, char** argv){
     *pid = (int)getpid();
     printf("S2 : publishing PID : %d  \n", (int)getpid());
     to_sleep();
+    
 
     // Création des semaphores pour synchroniser le capteur (schema producteur/consommateur) 
     sem_t *sem_prod = sem_open(SEM_PRODUCER,O_CREAT,0660,1); //dernier 1 : valeur initialisation
@@ -88,11 +89,15 @@ int main(int argc, char** argv){
     {
       i_fenetre = 0;
     }
+
+
+    sem_post(sem_prod);
+
     while(1)
     { 
-        printf("Service 2 on\n");
         fflush(stdout);
         sem_wait(sem_cons);
+        fflush(stdout);
         temperature[i_fenetre] = *sensor_data;
         if ((memoire_stable = fopen(chemin_memoire_stable,"w"))== NULL)
         {
@@ -132,7 +137,7 @@ void to_sleep()
 {
     /* Active waiting TODO: bad practice change this */
     //sigwait
-    sigwait(SIGUSR1,NULL)
+    //sigwait(SIGUSR1,NULL)
     sleeping = 1;
     while(sleeping)
     {
