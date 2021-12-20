@@ -55,17 +55,3 @@ bool destroy_memory_block(char *nomfichier)
     return (shmctl(shared_block_id,IPC_RMID,NULL)!= IPC_RESULT_ERROR); // effectue  l'opération  de  contrôle  indiquée  par cmd sur le segment de mémoire partagée System V identifié par shmid.
 
 }
-
-// Test des fonctions
-/*
-int main()
-{
-    int* mem; //la memoire partagee va pointer sur un entier
-    mem = (int*)attach_memory_block("sharedmem",sizeof(int)); // (le fichier sharedmem doit exister...) Crée et attache la memoire partagé
-    *mem = 2; // Rempli la mémoire
-    printf("%d\n",*mem);
-    detach_memory_block(mem); // Detache la mémoire si plus besoin
-    destroy_memory_block("sharedmem"); // Supprime la mémoire si personne en a plus besoin
-}
-*/
-

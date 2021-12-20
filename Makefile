@@ -1,13 +1,22 @@
 COMP=gcc
-FLAGS=-Wall
+FLAGS=-Wall -pthread
+SRC=src
+OBJ=obj
+BIN=bin
+SRCS=$(wildcard $(SRC)/*.c)
+OBJS=$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
+targets=capteur service1 safety service2
+BINS=$(patsubst  %,$(BIN)/%.exe,$(targets))
+DEP=sharedmemory
+DEPS=$(patsubst  %,$(OBJ)/%.o,$(DEP))
 
-all: capteur
+all:$(BINS)
 
-%.o: %.c %.h
-	$(COMP) $(FLAGS) -c $<
+$(OBJ)/%.o:$(SRC)/%.c
+	$(COMP) $(FLAGS) -c $^ -o $@
 
-capteur: capteur.c sharedmemory.o
-	$(COMP) $(FLAGS) -o $@ $^
+$(BIN)/%.exe: $(OBJ)/%.o $(DEPS)
+	$(COMP) $(FLAGS) $^ -o $@
 
 clean:
-	rm -f *.o *.gch capteur
+	rm -f $(BIN)/* $(OBJ)/*

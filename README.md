@@ -1,9 +1,4 @@
 # Upssitech_3A_BE_Multithreading
-
-BE Multithreading Upssitech 3eme année
-
-Alexandre Baures
-Clément Petit
-Hakim Cherfi
-Jeremy Santene
-Ugo Roux
+Creer dossier `bin` et `obj`.
+Faire `make` puis lancer `./bin/service1` puis `./bin/capteur`.
+Reprise de service pour `service1` : executer `./bin/service1 resume`.
