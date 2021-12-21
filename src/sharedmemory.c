@@ -28,12 +28,14 @@ void * attach_memory_block(char *nomfichier,int taille)
 
     if (shared_block_id == IPC_RESULT_ERROR)
     {
+        printf("IPC_RESULT_ERROR 1");
         return NULL;
     }
 
     result = shmat(shared_block_id,NULL,0); //attache le segment de mémoire partagée System V identifié par shmid au segment de données du processus appelant
     if (result == (char *)IPC_RESULT_ERROR)
     {
+        printf("IPC_RESULT_ERROR 2");
         return NULL;
     }
     return result;

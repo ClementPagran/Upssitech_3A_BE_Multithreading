@@ -7,7 +7,7 @@ int system1_is_dead;
 
 int ticks;
 int time_intervals_check;
-int timeout_ms;
+int timeout_sec;
 
 int pid_program2;
 
@@ -16,6 +16,8 @@ int increment_prec;
 
 void my_thread_func();
 void start_backup_program();
+void sleep_backup_program();
+void sleepms(int msec);
 int get_pid();
 
 #endif

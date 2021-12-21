@@ -36,7 +36,9 @@ int main()
 	srand(time(NULL)); //donnée aleatoire a chaque lancement du programme
 	while(1)
 	{
+
 		sem_wait(sem_prod);
+
 		*data = 0.1*(random()%300); //genere la donnee (temperature aleatoire entre 0 et 29,9 degres)
 		printf("valeur capteur : %f\n",*data);
 		fflush(stdout);

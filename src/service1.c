@@ -82,7 +82,19 @@ int main(int argc, char** argv){
     }
     while(1)
     { 
+        printf(".........\n");
+        printf("POSTING\n");
+        fflush(stdout);
+
+        sem_post(sem_prod);
+        printf("WAITING\n");
+        fflush(stdout);
+
         sem_wait(sem_cons);
+        printf("RECEIVED\n");
+        printf(".........\n");
+        fflush(stdout);
+
         temperature[i_fenetre] = *sensor_data;
         if ((memoire_stable = fopen(chemin_memoire_stable,"w"))== NULL)
         {
@@ -100,7 +112,6 @@ int main(int argc, char** argv){
         i_fenetre++;
         i_fenetre = i_fenetre%TAILLE_FENETRE;
         sleep(1);
-        sem_post(sem_prod);
     }
     
     sem_close(sem_cons);

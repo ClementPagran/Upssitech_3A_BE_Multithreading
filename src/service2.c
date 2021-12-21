@@ -17,7 +17,7 @@
 
 #include "sharedmemory.h"
 #include "defines.h"
-
+sigset_t sigset;
 void* increment_watchdog_function(void*);
 
 double mean(double*,int);
@@ -30,9 +30,14 @@ void to_sleep();
 
 int main(int argc, char** argv){
 
+
     //Mise en veille de s2
     sleeping = 1;
 	  signal(SIGUSR1, my_handler);
+    
+    sigemptyset(&sigset);
+    sigaddset(&sigset, SIGUSR1);
+
     int* pid = (int*)attach_memory_block(path_to_PID_S2,sizeof(int));
     *pid = (int)getpid();
     printf("S2 : publishing PID : %d  \n", (int)getpid());
@@ -91,13 +96,11 @@ int main(int argc, char** argv){
     }
 
 
-    sem_post(sem_prod);
 
     while(1)
     { 
-        fflush(stdout);
+        sem_post(sem_prod);
         sem_wait(sem_cons);
-        fflush(stdout);
         temperature[i_fenetre] = *sensor_data;
         if ((memoire_stable = fopen(chemin_memoire_stable,"w"))== NULL)
         {
@@ -115,7 +118,6 @@ int main(int argc, char** argv){
         i_fenetre++;
         i_fenetre = i_fenetre%TAILLE_FENETRE;
         sleep(1);
-        sem_post(sem_prod);
     }
     
     sem_close(sem_cons);
@@ -128,22 +130,38 @@ void my_handler(int signum)
 {
     if (signum == SIGUSR1)
     {
-        printf("Received SIGUSR1!\n");
+      printf("Received SIGUSR1!\n");
+      //if we are sleeping
+      if(sleeping)
+      {
         sleeping = 0;
+        sigprocmask(SIG_UNBLOCK, &sigset, NULL);
+      }
+      else
+      {
+        to_sleep();
+      }
     }
 }
 
 void to_sleep()
 {
+    sigprocmask(SIG_BLOCK, &sigset, NULL);
     /* Active waiting TODO: bad practice change this */
     //sigwait
-    //sigwait(SIGUSR1,NULL)
     sleeping = 1;
     while(sleeping)
     {
-        
         printf("main : pid %d with waiting for signals \n", (int)getpid());
-        sleep(3);
+        int signum;
+        int result =sigwait(&sigset,&signum);
+        if(result == 0)
+        {
+          printf("sigwait got signal: %d\n", signum);
+          my_handler(signum);
+          
+        }
+          
     }
 }
 
