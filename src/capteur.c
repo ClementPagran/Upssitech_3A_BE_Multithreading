@@ -7,16 +7,15 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include"sharedmemory.h"
+#include "sharedmemory.h"
 #include "defines.h"
-
 
 int main()
 {
 	double* data;
 	if((data = (double*)attach_memory_block(path_to_shared_memory_data_sensor,sizeof(double)))==NULL)
 	{
-		printf("erreur : capteur n'a pas acces au bloc \"Memoire/data_capteur.mem\"\n");
+		printf("erreur : capteur n'a pas acces au bloc %s\n", path_to_shared_memory_data_sensor);
 		return -1;
 	}
 
@@ -33,12 +32,11 @@ int main()
 		perror("sem_open/consumer");
 		exit(EXIT_FAILURE);
 	}
+	
 	srand(time(NULL)); //donnée aleatoire a chaque lancement du programme
 	while(1)
 	{
-
 		sem_wait(sem_prod);
-
 		*data = 0.1*(random()%300); //genere la donnee (temperature aleatoire entre 0 et 29,9 degres)
 		printf("valeur capteur : %f\n",*data);
 		fflush(stdout);

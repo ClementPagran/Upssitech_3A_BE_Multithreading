@@ -17,7 +17,9 @@
 
 #include "sharedmemory.h"
 #include "defines.h"
+
 sigset_t sigset;
+
 void* increment_watchdog_function(void*);
 
 double mean(double*,int);
@@ -147,8 +149,6 @@ void my_handler(int signum)
 void to_sleep()
 {
     sigprocmask(SIG_BLOCK, &sigset, NULL);
-    /* Active waiting TODO: bad practice change this */
-    //sigwait
     sleeping = 1;
     while(sleeping)
     {
