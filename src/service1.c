@@ -17,12 +17,9 @@
 
 #include "sharedmemory.h"
 #include "defines.h"
+#include "service.h"
 
 void* increment_watchdog_function(void*);
-
-double mean(double*,int);
-
-void read_from_stable_memory(double*,int*,FILE*);
 
 int main(int argc, char** argv)
 {
@@ -136,19 +133,6 @@ int main(int argc, char** argv)
   sem_unlink(SEM_PRODUCER);
 }
 
-void read_from_stable_memory(double* tableau, int* i_fenetre,FILE* memoire_stable)
-{
-  char chaine[100];
-  for(int i = 0;i<TAILLE_FENETRE;i++)
-  {
-    fscanf(memoire_stable,"%s",chaine);
-    tableau[i] = strtod(chaine,NULL);
-  }
-  fscanf(memoire_stable,"%s",chaine);
-  fscanf(memoire_stable,"%s",chaine);
-  *i_fenetre = atoi(chaine)+1;
-}
-
 // fonction appelée dans le Thread_increment pour indiquer au watchdog qu'on est en vie
 void* increment_watchdog_function(void* p) {
   int* watchdog_increment = (int*) p;
@@ -166,11 +150,3 @@ void* increment_watchdog_function(void* p) {
   }
 }
 
-//fonction calcul de moyenne du tableau
-double mean (double* temperature, int size){
-    double somme = 0;
-    for(int i=0; i<size; i++){
-      somme += temperature[i];
-    }
-    return(somme/size);
-}

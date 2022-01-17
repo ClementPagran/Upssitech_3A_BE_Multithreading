@@ -5,15 +5,7 @@
 #define path_to_PID_S2 "./src/Memoire/PID_S2.mem"
 #define chemin_memoire_stable "./src/Memoire/memoire_stable.txt"
 #define TAILLE_FENETRE 10
-#define SLEEP_SERVICE 5
+#define SLEEP_SERVICE 1
 #define SLEEP_WATCHDOG 1
-
-#ifndef _service2 // include guard
-#define _service2
-#include <signal.h>
-#include <stdio.h>
-#include <unistd.h>
-int sleeping;
-void my_handler(int signum);
-void to_sleep();
-#endif
+#define TIME_INTERVALS_CHECK 1
+#define TIME_OUT_WATCHDOG 5
