@@ -38,12 +38,12 @@ int main(int argc, char **argv)
   }
 
   pid_t *pid_s2 = (pid_t *)attach_memory_block(path_to_PID_S2, sizeof(pid_t));
+  if(pid_s2 == NULL)
+  {
+    printf("erreur : service 2 n'a pas acces au bloc %s\n", path_to_PID_S2);
+    return -1;
+  }
   *pid_s2 = getpid();
-  printf("S2 : publishing PID : %d \n", (int)getpid());
-
-  // initialement S2 dort :
-  sleeping = 0;
-  kill(getpid(), SIGUSR1);
 
   sem_t *sem_prod;
   sem_t *sem_cons;
@@ -75,7 +75,15 @@ int main(int argc, char **argv)
   }
 
   sem_post(sem_prod); // Pour permettre la reprise (voir schema semaphores)
-  faire_reprise = 1;
+
+  // initialement S2 dort :
+  sleeping = 0;
+  if(kill(getpid(), SIGUSR1)!=0)
+  {
+    printf("kill (signal vers service 2) error\n");
+    return -1;
+  }
+
   while (1)
   {
     sem_wait(sem_cons);

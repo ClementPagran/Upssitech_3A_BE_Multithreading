@@ -43,7 +43,7 @@ int main(int argc, char** argv)
   pthread_create(&thread_increment, NULL, increment_watchdog_function, (void *)&watchdog_increment);
 
   // Lancement "normal" du service
-  if (argc == 1 && strcmp(argv[1], "nominal") == 0)
+  if (argc == 2 && strcmp(argv[1], "nominal") == 0)
   {
     // initialisation des semaphores
     sem_unlink(SEM_CONSUMER);

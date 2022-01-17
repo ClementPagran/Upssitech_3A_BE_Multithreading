@@ -11,7 +11,6 @@ DEP=sharedmemory
 DEPS=$(patsubst  %,$(OBJ)/%.o,$(DEP))
 
 all:$(BINS)
-	echo $(BINS)
 
 $(OBJ)/%.o:$(SRC)/%.c
 	mkdir -p obj
@@ -22,4 +21,4 @@ $(BIN)/%.exe: $(OBJ)/%.o $(DEPS)
 	$(COMP) $(FLAGS) $^ -o $@
 
 clean:
-	rm -f $(BIN)/* $(OBJ)/*
+	rm -rf $(BIN)/ $(OBJ)/
