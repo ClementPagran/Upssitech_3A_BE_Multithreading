@@ -1,2 +1,7 @@
+Memoire partagee :
 data_capteur.mem : double, données générées par capteur (temperature entre 0 et 29.9 degres)
 INCREMENT_S1.mem : type int, variable de contrôle activité du service 1
+PID_S2.mem : type pid_t, service 2 y écrit son PID
+
+---
+Memoire stable : memoire_stable.txt, fichier texte contenant les dernières températures enregistrées utilisées pour calculer la moyenne glissante, puis l'indice courant pour reprendre l'enregistrement au bon endroit.
