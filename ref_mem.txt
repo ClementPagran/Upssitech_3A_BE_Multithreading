@@ -1,7 +1,6 @@
 Memoire partagee :
 data_capteur.mem : double, données générées par capteur (temperature entre 0 et 29.9 degres)
 INCREMENT_S1.mem : type int, variable de contrôle activité du service 1
-PID_S1.mem : type pid_t, service 1 y écrit son PID
 PID_S2.mem : type pid_t, service 2 y écrit son PID
 
 ---
