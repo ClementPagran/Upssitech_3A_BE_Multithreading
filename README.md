@@ -12,3 +12,5 @@ Se placer dans le dossier, faire `make` puis lancer DANS CET ORDRE :
 On peut ensuite tuer le service 1 (`^C`), mais à la reprise, executer `./bin/service1 resume` (rien ne fonctionnera en cas d'oubli).
 
 Nettoyage : `make clean`
+
+`ipcrm -a` à chaque fois que l'on arrête les 4 programmes pour nettoyer les IPC toujours ouverts mais non utilisés par des processus.
