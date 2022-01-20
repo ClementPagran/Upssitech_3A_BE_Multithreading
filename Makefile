@@ -13,11 +13,11 @@ DEPS=$(patsubst  %,$(OBJ)/%.o,$(DEP))
 all:$(BINS)
 
 $(OBJ)/%.o:$(SRC)/%.c
-	mkdir -p obj
+	mkdir -p $(OBJ)
 	$(COMP) $(FLAGS) -c $^ -o $@
 
 $(BIN)/%.exe: $(OBJ)/%.o $(DEPS)
-	mkdir -p bin
+	mkdir -p $(BIN)
 	$(COMP) $(FLAGS) $^ -o $@
 
 clean:
